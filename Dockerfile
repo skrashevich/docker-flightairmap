@@ -1,5 +1,6 @@
+ARG DEBIAN_FRONTEND=noninteractive
 FROM debian:stable-slim
-
+ARG DEBIAN_FRONTEND
 ENV BASESTATIONPORT="30003" \
     FAM_BINGKEY="" \
     FAM_BITLYACCESSTOKENAPI="" \
@@ -15,12 +16,8 @@ ENV BASESTATIONPORT="30003" \
     FAM_HEREAPPID="" \
     FAM_LANGUAGE="EN" \
     FAM_LATITUDECENTER="46.38" \
-    FAM_LATITUDEMAX="46.92" \
-    FAM_LATITUDEMIN="42.14" \
     FAM_LIVEZOOM="9" \
     FAM_LONGITUDECENTER="5.29" \
-    FAM_LONGITUDEMAX="6.2" \
-    FAM_LONGITUDEMIN="1.0" \
     FAM_LUFTHANSAKEY="" \
     FAM_LUFTHANSASECRET="" \
     FAM_MAPBOXID="examples.map-i86nkdio" \
@@ -44,9 +41,15 @@ ENV BASESTATIONPORT="30003" \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN set -x && \
-    apt-get update -y && \
-    apt-get install -y --no-install-recommends \
+ADD deploy-s6-overlay.sh /deploy-s6-overlay.sh
+# Prepare apt for buildkit cache
+RUN rm -f /etc/apt/apt.conf.d/docker-clean \
+  && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
+
+RUN --mount=type=cache,id=${TARGETARCH},target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -x && \
+    apt update && \
+    apt install -y --no-install-recommends --no-install-suggests \
         ca-certificates \
         curl \
         file \
@@ -65,9 +68,10 @@ RUN set -x && \
     echo "de_DE ISO-8859-1" >> /etc/locale.gen && \
     echo "es_ES ISO-8859-1" >> /etc/locale.gen && \
     echo "fr_FR ISO-8859-1" >> /etc/locale.gen && \
+    echo "ru_RU ISO-8859-1" >> /etc/locale.gen && \
     locale-gen && \
     echo "========== Deploy php7 ==========" && \
-    apt-get install -y --no-install-recommends \
+    apt install -y --no-install-recommends --no-install-suggests \
         php \
         php-curl \
         php-fpm \
@@ -101,15 +105,16 @@ RUN set -x && \
     rm -rf /var/www/flightairmap/htdocs/.git && \
     echo "========== Deploy s6-overlay ==========" && \
     apt-get install --no-install-recommends -y gnupg && \
-    wget -q -O - https://raw.githubusercontent.com/mikenye/deploy-s6-overlay/master/deploy-s6-overlay.sh | sh && \
+    sh /deploy-s6-overlay.sh && \
+    rm -f /deploy-s6-overlay.sh && \
     apt-get remove -y gnupg && \
     echo "========== Clean up ==========" && \
-    apt-get remove -y \
+    apt remove -y \
         file \
         git \
         && \
     apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /src
+    rm -rf /tmp/* /src
 
 # Copy config files
 COPY etc/ /etc/
