@@ -41,7 +41,6 @@ ENV BASESTATIONPORT="30003" \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ADD deploy-s6-overlay.sh /deploy-s6-overlay.sh
 # Prepare apt for buildkit cache
 RUN rm -f /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
@@ -105,8 +104,7 @@ RUN --mount=type=cache,id=${TARGETARCH},target=/var/cache/apt,sharing=locked --m
     rm -rf /var/www/flightairmap/htdocs/.git && \
     echo "========== Deploy s6-overlay ==========" && \
     apt-get install --no-install-recommends -y gnupg && \
-    sh /deploy-s6-overlay.sh && \
-    rm -f /deploy-s6-overlay.sh && \
+    wget -q -O - https://raw.githubusercontent.com/mikenye/deploy-s6-overlay/master/deploy-s6-overlay.sh | sh &&  \
     apt-get remove -y gnupg && \
     echo "========== Clean up ==========" && \
     apt remove -y \
