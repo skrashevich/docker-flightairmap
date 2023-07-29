@@ -1,8 +1,8 @@
-# mikenye/flightairmap
+# skrashevich/flightairmap
 
 Docker container for [FlightAirMap](http://flightairmap.com).
 
-Builds and runs on x86_64, arm32v6, arm32v7 and arm64v8 (and possibly other architectures).
+Builds and runs on x86_64, arm32v7 and arm64v8 (and possibly other architectures).
 
 ---
 
@@ -43,7 +43,7 @@ docker run -d \
     -e FAM_INSTALLPASSWORD="very_secure_password_12345" \
     -v flightairmap_db:/var/lib/mysql \
     -v flightairmap_webapp:/var/www/flightairmap \
-    mikenye/flightairmap
+    skrashevich/flightairmap
 ```
 
 On the first run of the container, the database will be created & populated and data will be downloaded from the internet. This process can take quite some time. On my system, around 30 minutes. Once the first run processes are finished, to access FlightAirMap, you can:
@@ -69,7 +69,7 @@ volumes:
 services:
 
   flightairmap:
-    image: mikenye/flightairmap:latest
+    image: skrashevich/flightairmap:latest
     tty: true
     container_name: flightairmap
     restart: always
@@ -277,6 +277,6 @@ ainer cannot be changed, but you are free to use any port on the host side.
 
 ## Getting Help
 
-Having troubles with the container or have questions?  Please [create a new issue](https://github.com/mikenye/docker-flightairmap/issues).
+Having troubles with the container or have questions?  Please [create a new issue](https://github.com/skrashevich/docker-flightairmap/issues).
 
 I also have a [Discord channel](https://discord.gg/sTf9uYF), feel free to [join](https://discord.gg/sTf9uYF) and converse.
