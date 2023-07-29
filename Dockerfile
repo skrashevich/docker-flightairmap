@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.6
+
 ARG DEBIAN_FRONTEND=noninteractive
 FROM debian:stable-slim
 ARG DEBIAN_FRONTEND
@@ -45,7 +47,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN rm -f /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
 
-RUN --mount=type=cache,id=${TARGETARCH},target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt,sharing=locked \
+RUN --mount=type=cache,id=${TARGETARCH},target=/var/cache/apt,sharing=locked --mount=type=cache,id=${TARGETARCH},target=/var/lib/apt,sharing=locked \
     set -x && \
     apt update && \
     apt install -y --no-install-recommends --no-install-suggests \
